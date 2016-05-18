@@ -1,0 +1,140 @@
+<?php
+/**
+ * @file
+ * Defines functions for Commerce custom line item refund module.
+ */
+/**
+ * Implements hook_commerce_line_item_type_info().
+ */
+function groom_refund_line_item_commerce_line_item_type_info()
+{
+    return array(
+        'grefund_line_item' => array(
+            'type'                  => 'grefund_line_item',
+            'name'                  => t('Remboursement d\'un produit'),
+            'description'           => t('Rembourse un produit de la commande.'),
+            'add_form_submit_value' => t('Rembourser un produit'),
+            'product'               => true,
+            'base'                  => 'grefund_line_item',
+            'callbacks'             => array(
+                'configuration'   => 'groom_refund_line_item_configuration',
+                'add_form'        => 'groom_refund_line_item_form',
+                'add_form_submit' => 'groom_refund_line_item_form_submit',
+                'title'           => 'groom_refund_line_item_title',
+            ),
+        ),
+    );
+}
+
+/**
+ * Returns the elements necessary to add a product line item through a line item
+ * manager widget (on the order form).
+ *
+ * @param $element
+ * @param $form_state
+ *
+ * @return array
+ */
+function groom_refund_line_item_form($element, &$form_state)
+{
+    // These will be the options available for refund.
+    $options = array();
+
+    /*
+     * These are line items that have already been refunded and need to be removed
+     * from the options array
+     */
+    $unset_options = array();
+    // Go through all current line items.
+    foreach ($element['line_items'] as $key => $line_item)
+    {
+        $item = entity_metadata_wrapper('commerce_line_item', commerce_line_item_load($key));
+
+        // Already refunded items.
+        if ($item->type->value() === 'refund_line_item' || $item->type->value() === 'grefund_line_item') {
+            $unset_options[] = $item->grefunded_line_item->line_item_id->value();
+        }
+        // Refundable.
+        else {
+            $options[$key] = t('Rembourser') . ': ' . commerce_line_item_title(commerce_line_item_load($key));
+        }
+    }
+
+    // Remove already refunded.
+    foreach ($unset_options as $unset) {
+        unset($options[$unset]);
+    }
+
+    $form                        = array();
+    $form['line_item_to_refund'] = array(
+        '#type'    => 'select',
+        '#title'   => t('Produit à rembourser'),
+        '#options' => $options,
+    );
+
+    return $form;
+}
+
+/**
+ * Adds the selected product information to a line item added via a line item
+ *   manager widget (on the admin order page).
+ *
+ * @param $line_item
+ *   The newly created line item object.
+ * @param $element
+ *   The array representing the widget form element.
+ * @param $form_state
+ *   The present state of the form upon the latest submission.
+ * @param $form
+ *   The actual form array.
+ *
+ * @return void NULL if all is well or an error message if something goes wrong.
+ */
+function groom_refund_line_item_form_submit(&$line_item, $element, &$form_state, $form)
+{
+    $actions        = $form_state['values']['commerce_line_items'][LANGUAGE_NONE]['actions'];
+    $refund_item_id = $actions['line_item_to_refund'];
+    $refund_item    = entity_metadata_wrapper('commerce_line_item', commerce_line_item_load($refund_item_id));
+
+    // Get unit price from refunded item.
+    $line_item_price = $refund_item->commerce_unit_price->value();
+    _groom_refund_line_item_refund_price($line_item_price);
+
+    // Wrap the line item and product to easily set field information.
+    $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+    $line_item_wrapper->commerce_unit_price->set($line_item_price);
+    $line_item_wrapper->quantity->set($refund_item->quantity->value());
+
+    // Set the label.
+    $line_item->line_item_label = t('(@label)', array('@label' => $refund_item->line_item_label->value()));
+
+    // Set the reference to the original refunded item.
+    $line_item_wrapper->grefunded_line_item = $refund_item_id;
+
+    return;
+}
+
+/**
+ * Return the title for a refund item.
+ *
+ * @param mixed $line_item
+ *
+ * @return string
+ */
+function groom_refund_line_item_title($line_item)
+{
+    $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+    $title             = commerce_line_item_title($line_item_wrapper->grefunded_line_item->value());
+
+    return t('Remboursement (') . $title . ')';
+}
+
+
+function _groom_refund_line_item_refund_price(&$price)
+{
+    $price['amount'] *= -1;
+
+    foreach ($price['data']['components'] as &$component) {
+        $component['price']['amount'] *= -1;
+    }
+}

@@ -1,0 +1,52 @@
+<?php
+
+/*
+ * Implementation of hook_menu()
+ */
+function groom_profile_panels_menu(){
+  $items['mon-compte'] = array(
+    // page title
+    'title' => 'Mon compte',
+    // describe the page for the menu system.  site visitors will not see this
+    'description' => 'Simple custom hook_menu() implementation.',
+    // function that is called when visiting the new path
+    'page callback' => 'profile_page_function',
+    // permissions required to view page
+    'access arguments' => array('access content'),
+      'access callback' => TRUE,
+    'file path' => drupal_get_path('module', 'user'),
+    'file' => 'user.pages.inc'
+  );
+  return $items;
+}
+
+/*
+ * Returns custom content to Drupal
+ */
+function profile_page_function(){
+  // Call theme() function, so that Drupal includes the custom-page.tpl.php template
+  return theme('profile_node_template');
+}
+
+
+/*
+ * Implementation of hook_theme().
+ */
+function groom_profile_panels_theme(){
+  return array(
+    'profile_node_template' => array(
+        'render element' => 'form',
+        'template' => 'templates/node-panels-profile'
+    ),
+  );
+}
+
+/*
+ * Add js files
+ */
+function groom_profile_panels_preprocess_page(&$variables) {
+    if (current_path() === 'mon-compte') {
+        drupal_add_js(drupal_get_path('module', 'groom_profile_panels').'/js/panels.js');
+    }
+}
+

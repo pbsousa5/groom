@@ -1,0 +1,14 @@
+name = Groom Refund Line Item
+description = Add the refund line item type
+package = Groom
+core = 7.x
+
+dependencies[] = commerce
+dependencies[] = entityreference
+
+; Information added by Drupal.org packaging script on 2015-03-14
+version = "7.x-1.0"
+core = "7.x"
+project = "groom_refund_line_item"
+datestamp = "1426374184"
+

@@ -1,0 +1,14 @@
+name = Default user picture styles
+description = Allows to apply image styles to default user picture and enhances default user picture field for Views.
+core = 7.x
+package = Views
+
+dependencies[] = views
+files[] = views/handlers/DUPStylesFieldHandler.inc
+
+; Information added by drupal.org packaging script on 2013-10-09
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "default_user_picture_styles"
+datestamp = "1381358250"
+

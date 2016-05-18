@@ -1,0 +1,95 @@
+<?php
+/**
+ * @file
+ * Provides User profile image or default profile image as views field.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function default_user_picture_styles_help($path, $arg) {
+  if ($path == 'admin/help#default_user_picture_styles') {
+    $output = '<h3>' . t('Introduction') . '</h3>';
+    $output .= '<p>' . t('Default User Picture Styles allows you to apply image styles on the default user picture by providing you with a file id (a fid). It also enhances the default user picture field that comes bundled with Views by enabling you to apply any desired image style.') . '</p>';
+    $output .= '<p>' . t('This module does the downloading and processing of the default user image that was specified via URL at admin/config/people/accounts and saves the fid in a variable for future reference. It also defines a custom field handler used to enhance the default user picture field in Views.') . '</p>';
+    $output .= '<p>' . t('Requirements: Views.') . '</p>';
+    $output = '<h3>' . t('Configuration') . '</h3>';
+    $output .= '<p>' . t('Once you enable this module, this module add an additional configuration field in admin/config/people/accounts where you can set the default save location for the default user picture.') . '</p>';
+    $output .= '<p>' . t('Please see README.txt for information for developers.') . '</p>';
+    return $output;
+  }
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function default_user_picture_styles_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'default_user_picture_styles') . '/views',
+  );
+}
+
+/**
+ * Function registers a file with a given uri associated to the current user.
+ *
+ * @param string $uri
+ *   A file uri.
+ */
+function default_user_picture_styles_register_file($uri) {
+  global $user;
+  $file = new stdClass();
+  $file->uid = $user->uid;
+  $file->uri = $uri;
+  $file->status = 1;
+  $file->filemime = file_get_mimetype($file->uri);
+  file_save($file);
+  return $file->fid;
+}
+
+/**
+ * Automates the process of saving and registering an external image.
+ *
+ * @param string $url
+ *   The image url.
+ */
+function default_user_picture_styles_save_image($url) {
+  $fid = 0;
+  $path = system_retrieve_file($url, 'public://' . variable_get('user_picture_path', ''));
+  if ($path) {
+    $fid = default_user_picture_styles_register_file($path);
+  }
+  variable_set('dup_default_user_image_fid', $fid);
+}
+
+/**
+ * Deletes the current saved default image from database.
+ */
+function default_user_picture_styles_delete_image() {
+  if ($fid = variable_get('dup_default_user_image_fid', 0)) {
+    $file = file_load($fid);
+    file_delete($file);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function default_user_picture_styles_form_user_admin_settings_alter(&$form, &$form_state, $form_id) {
+  $form['#submit'][] = 'default_user_picture_styles_user_settings_submit';
+}
+
+/**
+ * Submit handler for user_admin_settings.
+ */
+function default_user_picture_styles_user_settings_submit(&$form, &$form_state) {
+  if ($form_state['values']['user_picture_default']) {
+    $old_url = variable_get('dup_previous_default_image_url', '');
+    $new_url = $form_state['values']['user_picture_default'];
+    if ($old_url != $new_url) {
+      default_user_picture_styles_delete_image();
+      variable_set('dup_previous_default_image_url', $new_url);
+      default_user_picture_styles_save_image($new_url);
+    }
+  }
+}

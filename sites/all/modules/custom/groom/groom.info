@@ -1,0 +1,29 @@
+name = Groom
+package = Groom
+description = "Groom module"
+core = 7.x
+version = "7.x-2.0"
+
+configure = admin/groom/reservation-type
+
+dependencies[] = list 
+dependencies[] = number 
+dependencies[] = taxonomy
+dependencies[] = views
+dependencies[] = commerce
+dependencies[] = commerce_product
+dependencies[] = commerce_line_item
+; dependencies[] = date
+; dependencies[] = date_api
+; dependencies[] = date_popup
+; dependencies[] = views
+
+; Classes
+files[] = includes/class/GroomRoom.inc
+files[] = includes/class/GroomReservation.inc
+files[] = includes/class/GroomSlotType.inc
+
+; Views plugins
+files[] = includes/views/views_handler_commerce_line_item_data.inc
+files[] = includes/views/views_handler_commerce_line_item_vat.inc
+files[] = includes/views/views_handler_commerce_line_item_reservation_associated.inc

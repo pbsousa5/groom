@@ -1,0 +1,28 @@
+# French translation of Menu token (7.x-1.0-beta5)
+# Copyright (c) 2013 by the French translation team
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Menu token (7.x-1.0-beta5)\n"
+"POT-Creation-Date: 2013-06-14 18:01+0000\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+msgid "Disabled"
+msgstr "Désactivé"
+msgid "Replacement patterns"
+msgstr "Motifs de remplacement"
+msgid "Entity ID"
+msgstr "Identifiant (ID) de l'entité"
+msgid "Menu token properties"
+msgstr "Propriétés de Menu token"
+msgid "The menu link {menu_links}.mlid"
+msgstr "Le lien de menu {menu_links}.mlid"
+msgid "The actual path with tokens"
+msgstr "Le chemin réel avec jetons"
+msgid "Provides tokens in menu items (links)."
+msgstr "Fournit des jetons dans les éléments de menus (liens)."

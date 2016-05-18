@@ -1,0 +1,24 @@
+# French translation of Commerce Cart Ajax (7.x-1.0)
+# Copyright (c) 2011 by the French translation team
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Commerce Cart Ajax (7.x-1.0)\n"
+"POT-Creation-Date: 2011-12-14 17:51+0000\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+msgid "Commerce (contrib)"
+msgstr "Commerce (contrib)"
+msgid "Commerce Cart Ajax"
+msgstr "Commerce Cart Ajax"
+msgid ""
+"Ajax features for Drupal Commerce Cart. Quick item removal and "
+"quantity changes."
+msgstr ""
+"Fonctionnalités Ajax pour le panier Drupal Commerce. Retraits de "
+"produits et changements de quantités rapides."

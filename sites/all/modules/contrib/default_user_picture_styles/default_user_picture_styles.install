@@ -1,0 +1,28 @@
+<?php
+/**
+ * @file
+ * In a nutshell, this file is aimed at populating important module variables
+ * when enabling or disabling the module. I'm not using hook_install or
+ * hook_uninstall for I need to make sure these get run every time the module
+ * is enabled or disabled.
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function default_user_picture_styles_enable() {
+  $current_url = variable_get('user_picture_default', '');
+  if ($current_url) {
+    variable_set('dup_previous_default_image_url', $current_url);
+    default_user_picture_styles_save_image($current_url);
+  }
+}
+
+/**
+ * Implements hook_disable().
+ */
+function default_user_picture_styles_disable() {
+  variable_del('dup_previous_default_image_url');
+  variable_del('dup_default_user_image_fid');
+  default_user_picture_styles_delete_image();
+}

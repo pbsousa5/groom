@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Perform install and uninstall tasks for the commerce_atos module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_atos_uninstall() {
+  variable_del('commerce_atos_display_means');
+  variable_del('commerce_atos_payment_means_logos');
+}

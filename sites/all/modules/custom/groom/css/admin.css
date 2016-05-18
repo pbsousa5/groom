@@ -1,0 +1,70 @@
+#groom-reservations-filters .container-inline-date {
+	display : inline-block;
+}
+
+#groom-admin-reservation-form-content .form-type-date-popup .date-padding,
+#groom-reservations-filters .form-type-date-popup .date-padding {
+	padding : 0;
+}
+
+#groom-admin-reservation-form-content .form-type-date-popup .form-item,
+#groom-reservations-filters .form-type-date-popup .form-item {
+	margin : 0;
+}
+
+#groom-admin-reservation-form-content .form-type-date-popup .form-item label,
+#groom-reservations-filters .form-type-date-popup .form-item label {
+	display : none;
+}
+
+#groom-reservations-filters #groom-filters-actions {
+	display : block;
+}
+
+
+
+.groom-table.table-has-actions .col-actions {
+	position : relative;
+}
+
+.groom-table.table-has-actions .col-actions .ctools-dropbutton {
+	margin-top : -12px;
+	position   : absolute;
+	top        : 50%;
+	right      : 10px;
+}
+
+
+
+#groom-reservations-list .empty.message {
+	color      : #BBB;
+	font-size  : 20px;
+	font-style : italic;
+	text-align : center;
+	padding    : 80px 40px;
+}
+
+#groom-reservations-list .col-status,
+#groom-reservations-list .col-quantity {
+	text-align : center;
+}
+
+#groom-reservations-list tr td.col-status.status-canceled {
+	color : #D32F2F;
+}
+
+#groom-reservations-list tr td.col-status.status-pending {
+	color : #999;
+}
+
+#groom-reservations-list tr td.col-status.status-validated {
+	color : #397400;
+}
+
+
+
+
+#groom-admin-reservation-form-content .user-infos label {
+	display   : inline-block;
+	min-width : 80px;
+}

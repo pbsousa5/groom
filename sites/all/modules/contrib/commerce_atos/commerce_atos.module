@@ -1,0 +1,437 @@
+<?php
+
+/**
+ * @file
+ * Implements Atos/Sips payment gateway for use with Drupal Commerce.
+ */
+
+// Define the default_mode => demo.
+define('COMMERCE_ATOS_DEFAULT_MODE', 'demo');
+
+/**
+ * Implements hook_commerce_payment_method_info().
+ */
+function commerce_atos_commerce_payment_method_info() {
+  $display_title = t('Credit card');
+  $display_means = variable_get('commerce_atos_display_means', TRUE);
+  $payment_means = variable_get('commerce_atos_payment_means_logos', array());
+  // Append means logos to the display title.
+  if ($display_means && !empty($payment_means)) {
+    $display_title .= theme('commerce_atos_payment_means', array('means' => $payment_means));
+  }
+  $payment_methods['atos'] = array(
+    'title' => t('Credit card Atos'),
+    'display_title' => $display_title,
+    'base' => 'commerce_atos',
+    'file' => 'commerce_atos.callbacks.inc',
+    'description' => t('Enable Atos payment'),
+    'offsite' => TRUE,
+    'offsite_autoredirect' => FALSE,
+    'terminal' => FALSE,
+    'active' => TRUE,
+  );
+  return $payment_methods;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_atos_menu() {
+  $items = array();
+  // Define an always accessible path to receive autoresponse.
+  $items['commerce_atos/autoresponse/%commerce_order/%commerce_payment_method_instance'] = array(
+    'page callback' => 'commerce_atos_payment_autoresponse',
+    'page arguments' => array(2, 3),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Return an array of the languages supported by ATOS/SIPS.
+ */
+function commerce_atos_get_languages() {
+  return array(
+    'fr' => t('French'),
+    'en' => t('English'),
+    'ge' => t('German'),
+    'sp' => t('Spanish'),
+    'it' => t('Italian'),
+  );
+}
+
+/**
+ * Helper function that maps an iso code to a language supported by ATOS.
+ */
+function _commerce_atos_map_iso_to_language($language) {
+  $mapping = array(
+    'de' => 'ge',
+    'es' => 'sp',
+  );
+  return isset($mapping[$language]) ? $mapping[$language] : $language;
+}
+
+/**
+ * Return an array of countries supported by ATOS/SIPS.
+ */
+function commerce_atos_get_merchant_countries() {
+  return array(
+    'be' => t('Belgium'),
+    'fr' => t('France'),
+    'de' => t('Germany'),
+    'it' => t('Italian'),
+    'es' => t('Spain'),
+    'en' => t('United Kingdom'),
+  );
+}
+
+/**
+ * Get the currency code of the provided store currency.
+ */
+function commerce_atos_get_currency_code($store_currency = NULL, $flip = FALSE) {
+  $currencies = array(
+    'EUR' => '978',
+    'USD' => '840',
+    'CHF' => '756',
+    'GBP' => '826',
+    'CAD' => '124',
+    'JPY' => '392',
+    'MXP' => '484',
+    'TRL' => '792',
+    'AUD' => '036',
+    'NZD' => '554',
+    'NOK' => '578',
+    'BRC' => '986',
+    'ARP' => '032',
+    'KHR' => '116',
+    'TWD' => '901',
+    'SEK' => '752',
+    'DKK' => '208',
+    'KRW' => '410',
+    'SGD' => '702',
+  );
+  $commerce_enabled_currencies = commerce_currencies(TRUE);
+  $currencies = array_intersect_key($currencies, $commerce_enabled_currencies);
+  if ($flip) {
+    $currencies = array_flip($currencies);
+  }
+  if (empty($store_currency)) {
+    return $currencies;
+  }
+  else {
+    return (isset($currencies[$store_currency])) ? $currencies[$store_currency] : '';
+  }
+}
+
+/**
+ * Return the demo merchant id used by the banks.
+ */
+function commerce_atos_mid($bank = NULL) {
+  $demo_mids = array(
+    'etransactions' => '013044876511111',
+    'sogenactif'   => '014213245611111',
+    'cyberplus'    => '038862749811111',
+    'mercanet'     => '082584341411111',
+    'scelliusnet'  => '014141675911111',
+    'sherlocks'    => '014295303911111',
+    'webaffaires'  => '014022286611111',
+    'elysnet'      => '014102450311111',
+    'citelis'      => '029800266211111',
+    'sips'         => '011223344551111',
+  );
+  return (!empty($bank) && isset($demo_mids[$bank])) ? $demo_mids[$bank] : $demo_mids;
+}
+
+/**
+ * Generate the pathfile + the parmcom file.
+ */
+function _commerce_atos_generate_files($pm_settings, &$form_state) {
+  $path = 'public://commerce_atos';
+  // If the directory doesn't exist, create it.
+  if (!file_exists($path)) {
+    if (!file_prepare_directory($path, FILE_CREATE_DIRECTORY)) {
+      form_set_error('form', t("The configuration directory couldn't be created"));
+      // Keep the entered values.
+      $form_state['redirect'] = FALSE;
+    }
+  }
+  // Datas for the parmcom file (Not sure if it's really useful).
+  $data2 = 'LOGO!commercant.gif!';
+  $data2 .= "\n";
+  $data2 .= 'LOGO2!commercant.gif!';
+  $data2 .= "\n";
+  $data2 .= '#AUTO_RESPONSE_URL!!';
+  $data2 .= "\n";
+  $data2 .= 'CANCEL_URL!http://!';
+  $data2 .= "\n";
+  $data2 .= 'RETURN_URL!http://!';
+  $data2 .= "\n";
+  $bank = $pm_settings['commerce_atos_bank'];
+  $merchant_id = ($pm_settings['commerce_atos_mode'] == COMMERCE_ATOS_DEFAULT_MODE ? commerce_atos_mid($bank) : $pm_settings['commerce_atos_merchant_id']);
+  // Save the parmcom file.
+  if (!file_unmanaged_save_data($data2, $path . '/parmcom.' . $merchant_id, FILE_EXISTS_REPLACE)) {
+    form_set_error('form', t("The parmcom file couldn't be created"));
+    $form_state['redirect'] = FALSE;
+  }
+  else {
+    // Now write datas to the pathfile.
+    $data = 'DEBUG!NO!';
+    $data .= "\n";
+    $data .= 'D_LOGO!' . url($pm_settings['commerce_atos_logo_path'], array('absolute' => TRUE)) . '/!';
+    $data .= "\n";
+    // Add the F_DEFAULT parameter.
+    $data .= 'F_DEFAULT!' . $pm_settings['commerce_atos_param_path'] . '/parmcom.' . $pm_settings['commerce_atos_bank'] . '!';
+    $data .= "\n";
+    $data .= 'F_PARAM!' . drupal_realpath($path) . '/parmcom!';
+    $data .= "\n";
+    $data .= 'F_CERTIFICATE!' . $pm_settings['commerce_atos_param_path'] . '/certif!';
+    $data .= "\n";
+    if (!file_unmanaged_save_data($data, $path . '/pathfile', FILE_EXISTS_REPLACE)) {
+      form_set_error('form', t("The pathfile couldn't be created"));
+      $form_state['redirect'] = FALSE;
+    }
+  }
+}
+
+
+/**
+ * Autoresponse menu callback.
+ */
+function commerce_atos_payment_autoresponse($order = NULL, $payment_method = NULL) {
+  if (!isset($_POST['DATA'])) {
+    watchdog('commerce_atos', 'Response attempted without any POST data.', array(), WATCHDOG_WARNING);
+    return;
+  }
+  // Retrieve the path of the binaries and the param directory.
+  $bin_path = $payment_method['settings']['commerce_atos_bin_path'];
+  // Retrieve the request stored in the object.
+  $request = &$order->data['atos']['request'];
+  $response = commerce_atos_parse_response($_POST['DATA'], $bin_path . '/response', $request['pathfile']);
+  if (!isset($response['code']) || ($response['code'] != 0)) {
+    watchdog('commerce_atos', 'Response error: %error', array('%error' => $response['error']), WATCHDOG_ERROR);
+    commerce_payment_redirect_pane_previous_page($order);
+    return;
+  }
+  $dump_vars = array(
+    'request' => $request,
+    'response' => $response,
+  );
+  $dump = print_r($dump_vars, TRUE);
+  // Check if the request and the response match.
+  $invalid = _commerce_atos_request_response_match($request, $response, $dump);
+  if ($invalid) {
+    commerce_payment_redirect_pane_previous_page($order);
+    return;
+  }
+  $charge = array(
+    'amount' => $request['amount'],
+    'currency_code' => commerce_atos_get_currency_code($request['currency_code'], TRUE),
+  );
+  if (!isset($response['response_code']) || ($response['response_code'] != '00') || empty($response['authorisation_id'])) {
+    commerce_atos_transaction($payment_method, $order, $charge, COMMERCE_PAYMENT_STATUS_FAILURE, $response);
+    watchdog('commerce_atos', 'Invalid Autoresponse code : <pre>%dump</pre>', array('%dump' => $dump), WATCHDOG_ERROR);
+    commerce_payment_redirect_pane_previous_page($order);
+  }
+  else {
+    _commerce_atos_finalize_process($payment_method, $order, $charge, $response, $dump);
+  }
+}
+
+/**
+ * Helper function that check if a transaction exists and create one if not.
+ *
+ * @param $payment_method
+ *   The payment method..
+ * @param $order
+ *   The order object.
+ * @param $charge
+ *   An array indicating the amount and currency code to charge.
+ * @param $response
+ *   The response coming from atos.
+ * @param $dump
+ *   A PHP print_r of both the request and the response for debugging purpose.
+ */
+function _commerce_atos_finalize_process($payment_method, $order, $charge, $response, $dump) {
+  // Check if a transaction 'success' has been processed before.
+  $query = db_select('commerce_payment_transaction', 'cpt')
+    ->fields('cpt')
+    ->condition('cpt.order_id', $response['order_id'])
+    ->condition('cpt.remote_id', $response['transaction_id'])
+    ->condition('cpt.payment_method', 'atos')
+    ->condition('cpt.status', COMMERCE_PAYMENT_STATUS_SUCCESS);
+  $result = $query->countQuery()->execute()->fetchField();
+  if ($result == 0) {
+    commerce_atos_transaction($payment_method, $order, $charge, COMMERCE_PAYMENT_STATUS_SUCCESS, $response);
+    watchdog('commerce_atos', 'Response payment success <pre>%dump</pre>', array('%dump' => $dump), WATCHDOG_INFO);
+    commerce_payment_redirect_pane_next_page($order);
+  }
+}
+
+/**
+ * Helper function used to compare the request and the response.
+ *
+ * @param $request
+ *   The request array sent to Atos.
+ * @param $response
+ *   The response array sent back by Atos.
+ * @param $dump
+ *   A PHP print_r of both the request and the response for debugging purpose.
+ *
+ * @return boolean
+ *   A boolean indicating whether or not the request and response match.
+ */
+function _commerce_atos_request_response_match($request, $response, $dump) {
+  $invalid = FALSE;
+  $names = array(
+    'amount',
+    'transaction_id',
+    'customer_id',
+    'currency_code',
+    'merchant_country',
+    'merchant_id',
+  );
+  foreach ($names as $name) {
+    if ($request[$name] != $response[$name]) {
+      $invalid = TRUE;
+      watchdog('commerce_atos', 'Response and request do not match: <pre>%dump</pre>', array('%dump' => $dump), WATCHDOG_ERROR);
+      break;
+    }
+  }
+  return $invalid;
+}
+
+/**
+ * Parse a response based on the provided POST data.
+ */
+function commerce_atos_parse_response($message, $bin_path, $pathfile_path) {
+  $params = array(
+    'pathfile' => $pathfile_path,
+    'message' => $message,
+  );
+  $results = _commerce_atos_exec($bin_path, $params);
+  return array(
+    'code' => $results[1],
+    'error' => $results[2],
+    'merchant_id' => $results[3],
+    'merchant_country' => $results[4],
+    'amount' => $results[5],
+    'transaction_id' => $results[6],
+    'payment_means' => $results[7],
+    'transmission_date' => $results[8],
+    'payment_time' => $results[9],
+    'payment_date' => $results[10],
+    'response_code' => $results[11],
+    'payment_certificate' => $results[12],
+    'authorisation_id' => $results[13],
+    'currency_code' => $results[14],
+    'card_number' => $results[15],
+    'cvv_flag' => $results[16],
+    'cvv_response_code' => $results[17],
+    'bank_response_code' => $results[18],
+    'complementary_code' => $results[19],
+    'complementary_info' => $results[20],
+    'return_context' => $results[21],
+    'caddie' => $results[22],
+    'receipt_complement' => $results[23],
+    'merchant_language' => $results[24],
+    'language' => $results[25],
+    'customer_id' => $results[26],
+    'order_id' => $results[27],
+    'customer_email' => $results[28],
+    'customer_ip_address' => $results[29],
+    'capture_day' => $results[30],
+    'capture_mode' => $results[31],
+    'data' => $results[32],
+  );
+}
+
+/**
+ * Create a transaction.
+ *
+ * @param $payment_method
+ *   The payment method instance object used to charge this payment.
+ * @param $order
+ *   The order object the payment applies to.
+ * @param $charge
+ *   An array indicating the amount and currency code to charge.
+ * @param $status
+ *   The transaction status.
+ */
+function commerce_atos_transaction($payment_method, $order, $charge, $status, $response) {
+  $transaction = commerce_payment_transaction_new('atos', $order->order_id);
+  $transaction->instance_id = $payment_method['instance_id'];
+  $transaction->amount = $charge['amount'];
+  $transaction->remote_id = $response['transaction_id'];
+  $transaction->currency_code = $charge['currency_code'];
+  $transaction->status = $status;
+  commerce_payment_transaction_save($transaction);
+}
+
+/**
+ * Execute an ATOS/SIPS binary. Return an array of results.
+ */
+function _commerce_atos_exec($bin_path, $params) {
+  $pairs = array();
+  foreach ($params as $key => $value) {
+    $pairs[] = escapeshellarg("$key=$value");
+  }
+  if (strstr($_SERVER['SERVER_SOFTWARE'], 'Win32') || strstr($_SERVER['SERVER_SOFTWARE'], 'IIS')) {
+    $command = '"' . escapeshellarg($bin_path) . ' ' . implode(' ', $pairs) . '"';
+  }
+  else {
+    $command = $bin_path . ' ' . implode(' ', $pairs);
+  }
+  $result = exec($command);
+  return explode('!', $result);
+}
+
+/**
+ * Implements hook_form_FORMID_alter().
+ *
+ * Ensure our commerce_atos.callbacks.inc is always loaded.
+ */
+function commerce_atos_form_rules_ui_edit_element_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['parameter']['payment_method'])) {
+    if ($form['parameter']['payment_method']['settings']['payment_method']['method_id']['#value'] == 'atos') {
+      form_load_include($form_state, 'inc', 'commerce_atos', 'commerce_atos.callbacks');
+      $form['#submit'][] = 'commerce_atos_settings_form_submit';
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_atos_theme() {
+  return array(
+    'commerce_atos_payment_means' => array(
+      'variables' => array(
+        'means' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Theme payment means logos.
+ */
+function theme_commerce_atos_payment_means($variables) {
+  $means = array();
+  foreach ($variables['means'] as $key => $mean) {
+    $image_variables = array(
+      'path' => $mean,
+      'alt' => t($key),
+      'title' => t($key),
+    );
+    $means[] = array(
+      '#markup' => theme('image', $image_variables),
+    );
+  }
+  $output = array(
+    '#prefix' => '<div class="commerce-atos-payment-means">',
+    'means' => $means,
+    '#suffix' => '</div>',
+  );
+  return drupal_render($output);
+}

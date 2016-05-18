@@ -1,0 +1,1088 @@
+// Login page (user not login)
+#user-login {
+    h3 {
+        font-size: 20px;
+        margin-bottom: 21px;
+    }
+    .password {
+        a {
+            text-align: left;
+            color: #3D3D3D;
+            text-decoration: underline;
+            font-size: 12px;
+        }
+    }
+    .hybridauth-widget-wrapper h3 {
+        display: none;
+    }
+    .register {
+        padding-right: 40px;
+        clear: both;
+        p {
+            text-align: justify;
+        }
+        .btn {
+            margin-top: 65px;
+        }
+    }
+    .btn {
+        display: block;
+        width: 90%;
+        margin: 30px auto 0;
+        &:hover {
+            background: #e84e0f;
+        }
+    }
+}
+
+// Register page
+.page-user-register {
+    #user-register-form {
+        .btn {
+            color: @gray-title;
+            &:hover {
+                color: @white;
+            }
+        }
+    }
+}
+
+// Frontpage
+.front {
+    #main .block {
+        float: none;
+        display: inline-block; 
+        vertical-align: top;
+        margin: 0 5% 30px -0.250em;
+        padding: 20px;
+        width: 30%;
+        background: @white;
+        border-bottom: 2px solid #DDD;
+        &:nth-child(3n+3) {
+            margin-right: 0;
+        }
+        h2 {
+            margin-top: 0;
+        }
+    }
+} 
+
+// Nomade solo (view unités)
+.accroche {
+    padding     : 15px 0px;
+    font-size   : 16px;
+    font-family : @font-family-dinwebmedium;
+}
+
+.view-id-view_products .product {
+    width         : 30%;
+    min-height    : 380px;
+    margin        : 20px 5% 0 0;
+    padding       : 0 0 40px;
+    text-align    : center;
+    color         : @gray-title;
+    background    : @white;
+    border-bottom : 2px solid #CCC;
+    font-family   : @font-family-dinwebmedium;
+
+    &:nth-child(3n+3) {
+        margin-right : 0;
+    }
+
+    h2 {
+        background : @gray-title;
+        color      : @white;
+        margin     : 0;
+        font-size  : 16px;
+        padding    : 15px 10px;
+    }
+
+    &.status-highlight {
+        background-color    : #0F1839;
+        border-bottom-color : #901049;
+        color               : #FFF;
+
+        h2 {
+            background-color : #901049;
+        }
+
+        .border {
+            border-bottom-color : rgba(255, 255, 255, 0.3);
+
+            .more {
+                color : #FFF;
+            }
+        }
+
+        .commerce-add-to-cart .form-item {
+            border-bottom-color : rgba(255, 255, 255, 0.3);
+
+            label {
+                color : #FFF;
+            }
+        }
+    }
+
+    .border {
+        padding       : 10px;
+        border-bottom : 1px solid @gray-lighter;
+
+        &.price {
+            font-size : 24px;
+            color     : @orange;
+        }
+
+        &.link {
+            a {
+                color : @gray-dark;
+            }
+        }
+    }
+    .form-item-quantity {
+        padding        : 0 20px 13px 20px;
+        border-bottom  : 1px solid @gray-lighter;
+
+        label,
+        input {
+            display        : inline-block;
+            vertical-align : middle;
+            width          : 49%;
+        }
+    }
+    .form-submit {
+        background    : @brand-primary;
+        padding-left  : 40px;
+        padding-right : 40px;
+        transition    : @transition;
+
+        &:hover {
+            background : #E84E0F;
+            color      : @white;
+        }
+    }
+}
+
+// Produits et services
+.view-id-view_products {
+    .product {
+        .more {
+            text-decoration : underline;
+            color           : @gray-title;
+
+            &:hover {
+                color : @gray-title;
+            }
+        }
+    }
+}
+
+.fancybox-wrap .commerce-add-to-cart {
+    .dropdown-menu.open {
+        max-height: 115px !important;
+
+        .dropdown-menu.inner {
+            max-height: 108px !important;
+        }
+    }
+}
+
+// Espace mon compte
+.page-mon-compte {
+    .form-group .link-field-url .form-group {
+        margin-bottom: 0;
+    }
+    .panel-fieldset {
+        display: none;
+        &.active {
+            display: block;
+        }
+        .help-block, .form-item-field-user-adresse-und-0-country {
+            display: none;
+        }
+        .image-widget-data {
+            width: 100%;
+        }
+        .name-block {
+            .form-item {
+                width: 100%;
+            }
+        }
+        .field-name-field-user-visibilite-identite, .field-name-field-user-visibilite-coor, .field-name-field-user-visibilite-bio {
+            label {
+                font-weight: 700;
+            }
+        }
+        .form-item-field-user-adresse-und-0-premise, .form-item-field-user-adresse-facturation-und-0-premise {
+            display: none;
+        }
+        div.addressfield-container-inline > div.form-item {
+            margin-right: 0;
+        }
+        input.password-confirm, input.password-field {
+            width: 100%;
+        }
+        .form-item-pass-pass1 {
+            padding-left: 0;
+        }
+        .form-item-pass-pass2 {
+            padding-right: 0;
+        }
+        #edit-field-user-avatar-und-0-ajax-wrapper .btn {
+            margin-top: 5px;
+            width: 100%;
+        }
+        .image-preview img {
+            border-radius: 3px;
+        }
+        .radio input[type="radio"], .radio-inline input[type="radio"], .checkbox input[type="checkbox"], .checkbox-inline input[type="checkbox"] {
+            margin-left: 0;
+        }
+    }
+    #edit-picture {
+        padding: 0;
+        border: none;
+        .panel-heading {
+            display: none;
+        }
+        .panel-body {
+            padding: 0;
+        }
+    }
+    #edit-submit {
+        min-width: 270px;
+    }
+    #edit-cancel {
+        display: none;
+    }
+    #user-profile-form {
+        background: @white;
+        padding: 30px;
+        border-bottom: 2px solid #CCC;
+        h2 {
+            margin-top: 0;
+        }
+    }
+    #panel-facturation {
+        .bloc {
+            margin-bottom: 40px;
+        }
+        table {
+            border: 2px solid #DDD;
+            thead {
+                background: #F5F5F5;
+            }
+            th, td {
+                border: 1px solid @white;
+                padding: 10px;
+                a {
+                    text-decoration: underline;
+                    color: @gray-font;
+                }
+            }
+        }
+        .solde {
+            table {
+                max-width: 60%;
+            }
+            h5 {
+                color: @orange;
+            }
+        }
+    }
+}
+#profile-navbar {
+    margin-bottom: 0;
+    padding-left: 30px;
+    ul {
+        li {
+            &.active {
+                a {
+                    background: @white;
+                    &:hover {
+                        background: @white;
+                    }
+                }
+            }
+            a {
+                color: @gray-base;
+                text-transform: uppercase;
+                text-decoration: underline;
+                font-family: @font-family-dinwebold;
+                padding-left: 30px;
+                padding-right: 30px;
+                &:hover {
+                    background: #E1E1E1;
+                }
+            }
+        } 
+    }
+}
+
+// Cart
+.page-cart {
+    #views-form-commerce-cart-form-default {
+        .delete-line-item {
+            padding-top: 10px;
+            padding-bottom: 7px;
+            font-size: 13px;
+        }
+        .views-table, .line-item-total {
+            background: @white;
+            border: 1px solid #ccc;
+            border-bottom: 2px solid #ccc;
+        }
+        .views-field-line-item-title {
+            max-width: 260px;
+            font-family: @font-family-dinwebold;
+            text-transform: uppercase;
+            color: @black;
+            a {
+                color: @black;
+                text-decoration: none;
+            }
+        }
+
+        td.views-field-product-line-item-infos {
+            font-size : 12px;
+            max-width : 220px;
+        }
+
+        .line-item-total {
+            padding: 20px;
+            font-family: @font-family-dinwebold;
+            font-size: 18px;
+            text-transform: uppercase;
+            color: @black;
+            .line-item-total-label {
+                font-weight: normal;
+            }
+        }
+        .table > thead > tr > th, .table > tbody > tr > td {
+            border: none;
+        }
+        .table > thead > tr > th {
+            font-weight: normal;
+            font-family: @font-family-dinwebold;
+            text-transform: uppercase;
+            color: @black;
+        }
+        #edit-submit {
+            float: left;
+            background: @brand-primary;
+        }
+        .form-submit {
+            &.delete-line-item {
+                &:hover {
+                    background: #9E0C0F !important;
+                }
+            }
+            &:hover {
+                background: @orange !important;
+                color: @white;
+            }
+        }
+    }
+    .views-field-product-line-item-infos ul {
+        margin: 0;
+        padding: 0 15px;
+        li {
+            font-size: 12px;
+        }
+    }
+}
+
+// Checkout page
+.page-checkout {
+    .checkout-help {
+        display: none;
+    }
+    .commerce_user_profile_pane {
+        display: none;
+    }
+    fieldset {
+        border: none;
+        background: none;
+        padding: 0;
+        box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+        .panel-heading {
+            display: none;
+        }
+        .panel-body {
+            padding: 0;
+        }
+    }
+    .name-block .form-group {
+        width: 100%;
+    }
+    fieldset.cart_contents, .checkout_review {
+        .view-content, .view-footer {
+            table {
+                background: @white;
+                border: 1px solid #CCC;
+                border-bottom: 2px solid #CCC;
+                margin-bottom: 30px;
+            }
+        }
+        .view-content {
+            color: @black;
+            .table > thead > tr > th, .table > tbody > tr > td {
+                border: none;
+            }
+            .table > thead > tr > th, .views-field-line-item-title {
+                font-weight: normal;
+                font-family: @font-family-dinwebold;
+                text-transform: uppercase;
+                color: @black;
+            }
+            td.views-field-line-item-title {
+                font-size: 18px;
+            }
+            .views-align-right {
+                text-align: left;
+            }
+        }
+        .view-footer {
+            table {
+                max-width: 30%;
+                float: right;
+                tr {
+                    td {
+                        background: @white !important;
+                        border: none;
+                    }
+                    &.component-type-commerce-price-formatted-amount {
+                        td {
+                            font-weight: normal;
+                            font-family: @font-family-dinwebold;
+                            text-transform: uppercase;
+                            color: @black;
+                            font-size: 18px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    fieldset.terms_conditions {
+        .panel-body {
+            font-size: 18px;
+            color: #4D4D4D;
+            text-align: right;
+            font-family: @font-family-dinweb;
+            a {
+                text-decoration: underline;
+                color: #4D4D4D;
+            }
+        }
+        input {
+            right: 0;
+        }
+        label {
+            padding-right: 25px;
+        }
+    }
+    fieldset.checkout-buttons {
+        .button-operator {
+            display: none;
+        }
+        .checkout-continue {
+            float: right;
+        }
+        .checkout-cancel {
+            background: @brand-danger;
+            color: @white;
+            text-decoration: none;
+            &:hover {
+                background: #9E0C0F !important;
+            }
+        }
+    }
+    .checkout-help {
+        font-weight: normal;
+        font-family: @font-family-dinwebold;
+        text-transform: uppercase;
+        color: @black;
+        font-size: 18px;
+        margin-bottom: 30px;
+    }
+    fieldset.customer_profile_billing, fieldset.commerce_payment {
+        .panel-heading {
+            display: block;
+            border: none;
+            padding: 0;
+            margin-bottom: 10px;
+            .panel-title {
+                font-size: 24px;
+                color: @gray-title;
+                text-transform: uppercase;
+                font-weight: normal;
+                text-transform: uppercase;
+                font-family: @font-family-dinwebold;
+            }
+        }
+    }
+    fieldset.customer_profile_billing {
+        .panel-body {
+            background: @white;
+            border: 1px solid #CCC;
+            border-bottom: 2px solid #CCC;
+            margin-bottom: 30px;
+            padding: 0.35em 0.625em 0.75em;
+        }
+        .panel-heading {
+            display: block;
+            border: none;
+            padding: 0;
+            margin-bottom: 10px;
+            .panel-title {
+                font-size: 24px;
+                color: @gray-title;
+                text-transform: uppercase;
+                font-weight: normal;
+                text-transform: uppercase;
+                font-family: @font-family-dinwebold;
+            }
+        }
+        .form-item-customer-profile-billing-commerce-customer-address-und-0-premise {
+            display: none;
+        }
+    }
+    .checkout_review {
+        .pane-title {
+            background: none;
+            td {
+                background: none;
+                border: none;
+                font-size: 24px;
+                padding: 0;
+                color: @gray-title;
+                text-transform: uppercase;
+                font-weight: normal;
+                font-family: @font-family-dinwebold;
+            }
+        }
+        .pane-data-full {
+            border: none;
+            padding: 0;
+        }
+    }
+    fieldset.commerce_payment {
+        .panel-heading {
+            background: none;
+        }
+        .panel-body {
+            background: @white;
+            border: 1px solid #CCC;
+            border-bottom: 2px solid #CCC;
+            margin-bottom: 30px;
+            padding: 0.35em 0.625em 0.75em;
+        }
+    }
+    .checkout-back {
+        background: @brand-primary;
+        color: #333;
+        text-decoration: none;
+        &:hover {
+            background: @orange !important;
+            color: @white !important;
+            text-decoration: none;
+        }
+    }
+    .views-field-product-line-item-infos ul {
+        margin: 0;
+        padding: 0 15px;
+        li {
+            font-size: 12px;
+        }
+    }
+    .form-item-terms-conditions-commerce-agree-terms-pane-field {
+        input {
+            right: 0;
+        }
+    }
+}
+
+.page-checkout-review {
+    #commerce-checkout-form-review {
+        .views-field.views-field-line-item-title {
+            max-width: 260px;
+        }
+    }
+}
+
+// View all members
+.page-membres {
+    .add-user {
+        position: absolute;
+        top: 0;
+        right: 15px;
+    }
+    .user {
+        margin: 20px 0 0;
+        background: @white;
+        padding: 10px;
+        width: 49%;
+        min-height: 260px;
+        margin-right: 2%;
+        border-bottom: 2px solid #CCC;
+        &.views-row-even {
+            margin-right: 0;
+        }
+        h3 {
+            margin-top: 0;
+            text-transform: uppercase;
+        }
+        h4 {
+            color: @orange;
+            margin-top: 0;
+            * {
+                display: inline;
+            }
+            span {
+                font-family: @font-family-dinweblight;
+                display: inline;
+                &:before {
+                    content: " # ";
+                    color: #ccc;
+                    display: inline;
+                }
+            }
+        }
+        span {
+            display: block;
+        }
+        img {
+            border-radius: 3px;
+        }
+        a {
+            color: @gray-font;
+        }
+        .btn {
+            font-size: 12px;
+            padding: 15px 20px;
+            margin: 20px 0 20px 10px;
+            font-family: @font-family-dinwebmedium;
+            &.btn-primary:hover {
+                background: @orange;
+                color: @white;
+            }
+            &.btn-success, &.btn-danger {
+                color: @white;
+            }
+            &.btn-danger {
+                border-radius: 3px;
+            }
+        }
+    }
+}
+
+// Profile modale user
+#profile {
+    color: @gray-font;
+    padding: 40px 20px;
+    text-align: left;
+    h2 {
+        margin-top: 0;
+        font-family: @font-family-dinwebmedium;
+    }
+    ul.info-user {
+        margin: 0;
+        padding: 0;
+        li {
+            margin: 0 0 5px;
+            line-height: 160%;
+            padding: 0;
+            list-style: none;
+            a {
+                color: @gray-font;
+            }
+        }
+    }
+    img {
+        border-radius: 3px;
+    }
+}
+
+// Detail espace coworking
+.google_map_field_display {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 10px;
+}
+.gallery {
+    clear: both;
+    margin-top: 30px;
+    ul {
+        margin: 0;
+        padding: 0;
+        li {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            float: left;
+            width: 25%;
+            max-height: 130px;
+            overflow: hidden;
+        }
+    }
+}
+
+.fancybox-wrap {
+    .fancybox-skin {
+        padding: 35px 15px 15px !important;
+    }
+    .close {
+        display: none;
+    }
+    .added-product-title {
+        font-size: 26px;
+        margin-bottom: 20px;
+        font-family: @font-family-dinweblight;
+    }
+    .button-wrapper {
+        display: none;
+    }
+    .view-content {
+        margin-bottom: 30px;
+        color: @gray-font;
+        font-size: 16px;
+    }
+    .btn {
+        font-size: 16px;
+    }
+    h1 {
+        font-size: 26px;
+        padding-bottom: 15px;
+    }
+}
+
+// Calendar
+#ftprod-booking-form {
+    label {
+        display: block;
+    }
+}
+td.past {
+    background: @gray-lighter !important;
+}
+td.single-day.future {
+    cursor: pointer;
+}
+.views-row-edit-static {
+    display: none;
+}
+
+// Reservation modale
+.resa-room,
+.resa-solo {
+    padding-top : 0 !important;
+
+    h1 {
+        margin-bottom : 0 !important;
+    }
+
+    .room {
+        .room-name {
+            font-size : 14px;
+            margin    : 5px 0;
+        }
+
+        p {
+            font-size : 12px;
+            margin    : 0 !important;
+        }
+    }
+
+    p.big {
+        font-size     : 16px;
+        margin-bottom : 0 !important;
+
+        strong {
+            font-size : 20px;
+        }
+    }
+
+    #groom-reservation-form {
+        width      : 100%;
+        text-align : center;
+        display    : inline-block;
+
+        label .form-required {
+            color: #c00;
+        }
+
+        .form-actions {
+            margin: 20px 0 0 0;
+        }
+
+        .form-type-select,
+        .form-type-textarea,
+        .form-submit {
+            display : none;
+        }
+
+        .form-type-textarea {
+            width  : 60%;
+            margin : 5px auto;
+        }
+
+        .form-textarea {
+            resize : none;
+        }
+
+        &.active {
+            .form-type-textarea {
+                display: block;
+            }
+
+            .form-submit {
+                display: inline-block;
+            }
+        }
+
+        .form-item.error {
+            background-color: transparent;
+            color: #c00;
+
+            label {
+                color: #c00;
+            }
+        }
+    }
+
+    .btn-close {
+        margin-left : 15px;
+    }
+
+    #groom-reservation-solo-form {
+        display : inline-block;
+    }
+
+    .co-workers {
+        margin : auto;
+
+        td,
+        th {
+            text-align : left;
+        }
+
+        tr th {
+            padding : 2px 10px;
+        }
+
+        tr {
+            td {
+                padding        : 5px 10px;
+                vertical-align : middle;
+
+                &.cw-quantity {
+                    text-align : center;
+                }
+            }
+
+            &.even td {
+                background : @gray-lighter;
+            }
+
+            &.last td {
+                border-bottom : 5px solid @brand-primary;
+            }
+
+            &.himself td {
+                font-weight : 700;
+            }
+        }
+    }
+
+    .rooms {
+        margin-bottom : 10px;
+        text-align    : center;
+
+        .room {
+            border-bottom  : 8px solid transparent;
+            border-right   : solid 1px transparent;
+            cursor         : pointer;
+            display        : block;
+            float          : left;
+            padding-top    : 10px;
+            padding-bottom : 10px;
+            text-align     : left;
+            transition     : @transition;
+
+            &:hover {
+                background          : @gray-lighter;
+                border-bottom-color : @brand-primary;
+            }
+
+            &.selected {
+                background          : @brand-primary;
+                border-bottom-color : @brand-primary;
+            }
+
+            &.disabled {
+                cursor              : default;
+                background          : none;
+                border-bottom-color : transparent;
+                padding-bottom      : 18px;
+
+                .overlay {
+                    width      : 100%;
+                    height     : 100%;
+                    background : rgba(0, 0, 0, 0.8);
+                    position   : absolute;
+                    top        : 0;
+                    left       : 0;
+
+
+                    .overlay-content {
+                        height  : 100%;
+                        display : table;
+                    }
+
+                    p {
+                        color          : @white;
+                        display        : table-cell;
+                        vertical-align : middle;
+                        text-align     : center;
+                    }
+                }
+            }
+        }
+
+        #reservation-container.form-pending & {
+            opacity: 0.5;
+
+            .room {
+                border-bottom  : 8px solid transparent;
+                cursor         : pointer;
+            }
+        }
+    }
+
+    .groom-input.input-type-number {
+        width      : 50px;
+        text-align : center;
+    }
+
+}
+
+.fancybox-overlay #messages {
+    #groom-list-products-container {
+        border-top  : solid 1px #DDD;
+        border-bottom  : solid 1px #DDD;
+        margin: 20px 0;
+        padding: 20px 0;
+
+    }
+
+    #groom-list-products-messages {
+
+        .messages {
+            background-color  : #F9F9F9;
+            border            : #DDD solid 1px;
+            border-left-width : 0;
+            clear             : both;
+            margin            : 0 0 20px 0;
+            color             : #444;
+            padding           : 10px 10px 10px 15px;
+            position          : relative;
+
+            &:before {
+                content          : '';
+                width            : 5px;
+                background-color : #999;
+                position         : absolute;
+                top              : -1px;
+                bottom           : -1px;
+                left             : 0;
+
+            }
+
+            &.status {
+                color            : #325E1C;
+                background-color : #F3FAEF;
+                border-color     : #C9E1BD #C9E1BD #C9E1BD transparent;
+
+                &:before {
+                    background-color : #77B259;
+                }
+            }
+
+            &.warning {
+                color            : #734C00;
+                background-color : #FDF8ED;
+                border-color     : #F4DAA6 #F4DAA6 #F4DAA6 transparent;
+
+                &:before {
+                    background-color : #E09600;
+                }
+            }
+
+            &.error {
+                color            : #A51B00;
+                background-color : #FCF4F2;
+                border-color     : #F9C9BF #F9C9BF #F9C9BF transparent;
+
+                &:before {
+                    background-color : #E62600;
+                }
+            }
+
+            ul {
+                margin : 0;
+            }
+        }
+
+    }
+
+    #groom-products-list-form {
+        max-width : 500px;
+        margin    : auto;
+
+        .form-item {
+            float : left;
+
+            label {
+                display     : block;
+                font-weight : bold;
+            }
+
+            .form-control {
+                display : block;
+                width   : auto;
+            }
+        }
+
+        .form-item-product-id {
+            width        : 80%;
+            margin-right : 2%;
+        }
+
+        .form-item-quantity {
+            width : 18%;
+
+            .form-control {
+                text-align : center;
+            }
+        }
+    }
+}
+
+#reservation-container {
+    .transition(opacity 0.4s);
+}
+
+// Order
+.entity-commerce-order {
+    .field-name-field-customer-siret {
+        margin-top : 20px;
+    }
+
+    .field-name-field-customer-tva-communautaire {
+        margin-bottom : 20px;
+    }
+}
+
+.view-id-commerce_cart_form {
+    width : 100%;
+}

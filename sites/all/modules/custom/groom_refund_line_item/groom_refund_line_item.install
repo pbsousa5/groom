@@ -1,0 +1,67 @@
+<?php
+/**
+ * Add reference to refunded line item.
+ */
+function groom_refund_line_item_install()
+{
+    $fields      = field_read_fields(array(), array('include_inactive' => true));
+    $field_types = field_info_field_types();
+
+    // Clear field info cache, so entity reference, inline_conditions and
+    // commerce_product_reference field types can be used.
+    if (!isset($field_types['entityreference'])) {
+        field_info_cache_clear();
+    }
+
+    if (empty($fields['grefunded_line_item']) && isset($field_types['entityreference']))
+    {
+        // Create entity reference field.
+        $field = array(
+            'entity_types' => array('commerce_line_item'),
+            'field_name'   => 'grefunded_line_item',
+            'type'         => 'entityreference',
+            'locked'       => true,
+            'settings'     => array(
+                'handler'     => 'base',
+                'target_type' => 'commerce_line_item',
+            ),
+        );
+        field_create_field($field);
+    }
+
+    // Make any existing-but-inactive fields active, and clear the cache to get
+    // instances for those fields.
+    field_sync_field_status();
+    field_info_cache_clear();
+
+    // Create instances for above fields.
+    $instances = field_info_instances();
+    if (empty($instances['commerce_line_item']['grefund_line_item']['grefunded_line_item']))
+    {
+        $instance = array(
+            'field_name'  => 'grefunded_line_item',
+            'entity_type' => 'commerce_line_item',
+            'bundle'      => 'grefund_line_item',
+            'label'       => 'Refunded line item reference',
+            'required'    => true,
+        );
+
+        field_create_instance($instance);
+    }
+}
+
+function groom_refund_line_item_uninstall()
+{
+    $fields      = field_read_fields(array(), array('include_inactive' => true));
+    $field_types = field_info_field_types();
+
+    // Clear field info cache, so entity reference, inline_conditions and
+    // commerce_product_reference field types can be used.
+    if (!isset($field_types['entityreference'])) {
+        field_info_cache_clear();
+    }
+
+    if (!empty($fields['grefunded_line_item'])) {
+        field_delete_field('grefunded_line_item');
+    }
+}

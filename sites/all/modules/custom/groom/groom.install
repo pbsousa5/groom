@@ -1,0 +1,190 @@
+<?php
+
+/**
+ *
+ */
+function groom_install()
+{
+    variable_set('groom_solo_reservation_capacity', 23);
+}
+
+/**
+ *
+ */
+function groom_enable()
+{
+
+}
+
+/**
+ *
+ */
+function groom_uninstall()
+{
+    variable_del('groom_solo_reservation_capacity');
+}
+
+/**
+ *
+ */
+function groom_schema()
+{
+    $schema['groom_reservation'] = array(
+        'description' => 'Réservation',
+        'fields'      => array(
+            'nid'            => array(
+                'type'     => 'serial',
+                'unsigned' => true,
+                'not null' => true
+            ),
+            'uid'            => array(
+                'type'     => 'int',
+                'unsigned' => true,
+                'not null' => true,
+                'default'  => 0
+            ),
+            'date'           => array(
+                'type'     => 'varchar',
+                'length'   => 60,
+                'not null' => true
+            ),
+            'time_slot'      => array(
+                'type'     => 'varchar',
+                'not null' => true,
+                'length'   => 255,
+                'default'  => ''
+            ),
+            'time_slot_type' => array(
+                'type'     => 'int',
+                'unsigned' => true,
+                'not null' => true,
+                'default'  => 0
+            ),
+            'room'           => array(
+                'type'     => 'int',
+                'unsigned' => true,
+                'not null' => true,
+                'default'  => 0
+            ),
+            'quantity'       => array(
+                'type'     => 'int',
+                'unsigned' => true,
+                'not null' => true,
+                'default'  => 1
+            ),
+            'status'       => array(
+                'type'     => 'varchar',
+                'length'   => 60,
+                'not null' => true,
+                'default'  => 'pending',
+            ),
+        ),
+        'unique keys' => array(
+            'nid' => array('nid'),
+            'uid_date_room_time-slot_time-slot-type' => array(
+                'uid',
+                'date',
+                'room',
+                'time_slot',
+                'time_slot_type'
+            )
+        ),
+        'primary key' => array(
+            'nid'
+        ),
+    );
+
+    return $schema;
+}
+
+/** Add "room" field to the "groom_reservation" table */
+function groom_update_7200()
+{
+    $field_spec = array(
+        'type'     => 'int',
+        'unsigned' => true,
+        'not null' => true,
+        'default'  => 0
+    );
+
+    if (!db_field_exists('groom_reservation', 'room')) {
+        db_add_field('groom_reservation', 'room', $field_spec);
+    }
+}
+
+/** Add user id ("uid") field to the "groom_reservation" table */
+function groom_update_7201()
+{
+    $field_spec = array(
+        'type'     => 'int',
+        'unsigned' => true,
+        'not null' => true,
+        'default'  => 0
+    );
+
+    if (!db_field_exists('groom_reservation', 'uid')) {
+        db_add_field('groom_reservation', 'uid', $field_spec);
+    }
+}
+
+/** Remove vid field and add "time_slot_type" field to the "groom_reservation" table */
+function groom_update_7202()
+{
+    $field_spec = array(
+        'type'     => 'int',
+        'unsigned' => true,
+        'not null' => true,
+        'default'  => 0
+    );
+
+    if (db_field_exists('groom_reservation', 'vid')) {
+        db_drop_field('groom_reservation', 'vid');
+    }
+
+    if (!db_field_exists('groom_reservation', 'time_slot_type')) {
+        db_add_field('groom_reservation', 'time_slot_type', $field_spec);
+    }
+}
+
+/** Add unicity between multiple fields */
+function groom_update_7203()
+{
+    db_drop_unique_key('groom_reservation', 'nid_vid');
+    db_add_unique_key('groom_reservation', 'uid_date_room_time-slot_time-slot-type', array(
+        'uid',
+        'date',
+        'room',
+        'time_slot',
+        'time_slot_type'
+    ));
+}
+
+/** Add status fields */
+function groom_update_7204()
+{
+    $field_spec = array(
+        'type'     => 'varchar',
+        'length'   => 60,
+        'not null' => true,
+        'default'  => 'pending',
+    );
+
+    if (!db_field_exists('groom_reservation', 'status')) {
+        db_add_field('groom_reservation', 'status', $field_spec);
+    }
+}
+
+/** Add quantity field to the "groom_reservation" table */
+function groom_update_7205()
+{
+    $field_spec = array(
+        'type'     => 'int',
+        'unsigned' => true,
+        'not null' => true,
+        'default'  => 1
+    );
+
+    if (!db_field_exists('groom_reservation', 'quantity')) {
+        db_add_field('groom_reservation', 'quantity', $field_spec);
+    }
+}

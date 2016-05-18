@@ -1,0 +1,367 @@
+// Custom overrides
+strong, b {
+    font-weight: normal;
+    font-family: @font-family-dinwebold;
+}
+h1, h2, h2, h3, h4, h5, h6 {
+    font-weight: normal;
+    text-transform: uppercase;
+    color: @gray-title;
+    font-family: @font-family-dinwebold;
+}
+h1, .page-header {
+    font-size: 36px;
+    border-bottom: solid 8px @brand-primary;
+    letter-spacing: inherit;
+    padding-bottom: 30px;
+    margin-top: 9px;
+    line-height: 115%;
+}
+.navbar-inverse .navbar-brand {
+    color: #fff;
+}
+img {
+    max-width: 100%;
+    height: auto;
+}
+.nopadding {
+    padding: 0 !important;
+    /*margin: 0 !important;*/
+}
+.nopaddingright {
+    padding-right: 0 !important;
+}
+.nopaddingleft {
+    padding-left: 0 !important;
+}
+.dropdown-menu .sub-menu {
+    left: 100%;
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+    margin-top: -1px;
+}
+
+.dropdown-menu li:hover .sub-menu {
+    visibility: visible;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
+    margin-top: 0;
+}
+
+.navbar .sub-menu:before {
+    border-bottom: 7px solid transparent;
+    border-left: none;
+    border-right: 7px solid rgba(0, 0, 0, 0.2);
+    border-top: 7px solid transparent;
+    left: -7px;
+    top: 10px;
+}
+.navbar .sub-menu:after {
+    border-top: 6px solid transparent;
+    border-left: none;
+    border-right: 6px solid #fff;
+    border-bottom: 6px solid transparent;
+    left: 10px;
+    top: 11px;
+    left: -6px;
+}
+.btn {
+    border: none;
+    text-transform: uppercase;
+    color: @gray-title;
+    font-weight: 700;
+    font-size: 19px;
+    white-space: normal;
+}
+label {
+    font-weight: normal;
+    color: #4D4D4D;
+}
+.btn,
+.form-submit,
+.fancybox-wrap .button-wrapper .button.checkout,
+.fancybox-wrap .button-wrapper .button.continue {
+    font-family: @font-family-dinwebold;
+    font-weight: normal;
+    transition: @transition;
+    &.btn-danger {
+        color: @white;
+        border-radius: 0px;
+    }
+    &.btn-success {
+        color: @white;
+    }
+}
+.btn-primary:hover {
+    background: @orange;
+    color: @white;
+}
+.form-submit {
+    background: @brand-primary;
+    &.btn-danger {
+        background: @brand-danger;
+    }
+    &:hover {
+        background: @orange;
+        color: @white;
+    }
+}
+.fancybox-wrap .button-wrapper .button.checkout, .fancybox-wrap .button-wrapper .button.continue {
+    display: inline-block;
+    margin-bottom: 0px;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    background-image: none;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 15px;
+    line-height: 1.42857;
+    border-radius: 4px;
+    width: auto;
+    -moz-user-select: none;
+    background: @brand-primary;
+    font-family: @font-family-dinwebold;
+    color: @gray-title;
+    text-transform: uppercase;
+    &:hover {
+        background: @orange;
+        color: @white;
+    }
+    a {
+        font-weight: normal;
+        color: @gray-title;
+    }
+}
+.fancybox-wrap .button-wrapper .button.continue {
+    float: right;
+}
+.form-control {
+    border-radius: 0px;
+}
+.fancybox-overlay {
+    background: rgba(0, 0, 0, 0.45);
+}
+.fancybox-skin {
+    border-radius: 3px;
+    background: @white;
+    .breadcrumb {
+        display: none;
+    }
+}
+.fancybox-opened .fancybox-skin {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+.fancybox-close {
+    background: url('../images/close-button-fancy.png') no-repeat;
+    cursor: pointer;
+    right: 25px;
+    top: 25px;
+    width: 31px;
+    height: 28px;
+    position: absolute;
+    top: 0.625rem;
+    right: 20px;
+    text-decoration: none;
+    &:before, &:after {
+        display: none;
+    }
+}
+.fancybox-desktop {
+    min-width: 500px;
+}
+.fancybox-outer,
+.fancybox-inner {
+    text-align: center;
+}
+.fancybox-inner {
+    min-width: 470px;
+}
+.navbar-default .navbar-toggle {
+    border: none;
+    margin-top: 30px;
+    margin-right: 5px;
+    position: relative;
+    width: 90px;
+    .icon-bar {
+        background-color: @gray-title;
+        float: right;
+    }
+    &:hover {
+        background: none;
+    }
+    .menu-item {
+        float: left;
+        font-family: @font-family-dinweblight;
+        text-transform: uppercase;
+        color: @gray-title;
+        margin-top: -2px;
+    }
+}
+.radio input[type="radio"], .radio-inline input[type="radio"], .checkbox input[type="checkbox"], .checkbox-inline input[type="checkbox"] {
+    margin-left: 0;
+}
+.form-type-checkbox {
+    label {
+        margin-left: 10px;
+    }
+}
+#messages {
+    .alert {
+        border: none !important;
+        border-radius: 0px;
+        border-bottom: 8px solid @brand-primary !important;
+        color: @gray-font !important;
+        background: none !important;
+        margin: 0;
+        padding: 20px 0 15px;
+        zoom: 1;
+
+        .modal-title,
+        h1 {
+            font-size: 26px;
+            margin-bottom: 20px;
+            font-family: DINWeb-Light, sans-serif;
+            border: none;
+            text-transform: none;
+            padding-bottom: 0;
+            color: @gray-font;
+        }
+
+
+        .modal-subtitle {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 0;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+        &:before, &:after { content: ""; display: table; }
+        &:after { clear: both; }
+    }
+}
+.form-type-checkboxes {
+    label {
+        display: none;
+    }
+    .checkbox label {
+        display: block;
+    }
+}
+.block-userpoints {
+    .userpoints-points {
+        margin: 0;
+        padding: 0;
+        li {
+            list-style: none;
+        }
+    }
+    .userpoints-links {
+        display: none;
+    }
+}
+
+.form-select.bootstrap-select {
+    .btn {
+        display: inline-block;
+        margin-bottom: 0;
+        font-family: inherit;
+        font-weight: @btn-font-weight;
+        text-align: center;
+        vertical-align: middle;
+        touch-action: manipulation;
+        cursor: pointer;
+        background-image: none;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        .button-size(@padding-base-vertical; @padding-base-horizontal; @font-size-base; @line-height-base; @btn-border-radius-base);
+        .user-select(none);
+
+        &,
+        &:active,
+        &.active {
+            &:focus,
+            &.focus {
+                .tab-focus();
+            }
+        }
+
+        &:hover,
+        &:focus,
+        &.focus {
+            color: @btn-default-color;
+            text-decoration: none;
+        }
+
+        &:active,
+        &.active {
+            outline: 0;
+            background-image: none;
+            .box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
+        }
+
+        &.disabled,
+        &[disabled],
+        fieldset[disabled] & {
+            cursor: @cursor-disabled;
+            .opacity(.65);
+            .box-shadow(none);
+        }
+
+        a& {
+            &.disabled,
+            fieldset[disabled] & {
+                pointer-events: none;
+            }
+        }
+    }
+
+    .btn-default {
+        .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
+    }
+    .btn-primary {
+        .button-variant(@btn-primary-color; @btn-primary-bg; @btn-primary-border);
+    }
+    // Success appears as green
+    .btn-success {
+        .button-variant(@btn-success-color; @btn-success-bg; @btn-success-border);
+    }
+    // Info appears as blue-green
+    .btn-info {
+        .button-variant(@btn-info-color; @btn-info-bg; @btn-info-border);
+    }
+    // Warning appears as orange
+    .btn-warning {
+        .button-variant(@btn-warning-color; @btn-warning-bg; @btn-warning-border);
+    }
+    // Danger and error appear as red
+    .btn-danger {
+        .button-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
+    }
+
+    .dropdown-toggle .filter-option {
+        text-overflow: ellipsis;
+    }
+
+    .dropdown-menu li small {
+        display: block;
+        padding: 0;
+    }
+
+    &.dropdown-divided .dropdown-menu li {
+        border-bottom : solid 1px #DDD;
+
+        &:last-of-type {
+            border-bottom : none;
+        }
+    }
+}

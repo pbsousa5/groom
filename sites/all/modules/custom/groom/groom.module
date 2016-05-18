@@ -1,0 +1,805 @@
+<?php
+
+module_load_include('inc', 'groom', 'groom.block');
+module_load_include('inc', 'groom', 'groom.rules');
+module_load_include('inc', 'groom', 'groom.theme');
+module_load_include('inc', 'groom', 'groom.utils');
+
+/**
+ *
+ */
+function groom_menu()
+{
+    $items['admin/groom'] = array(
+        'title'            => t('Groom'),
+        'description'      => t('Administrer les paramètres du site Groom'),
+        'access arguments' => array('access groom admin'),
+        'page callback'    => 'system_admin_menu_block_page',
+        'file'             => 'system.admin.inc',
+        'file path'        => drupal_get_path('module', 'system'),
+        'weight'           => -6,
+    );
+
+    $items['admin/groom/reservations'] = array(
+        'title'            => t('Gérer les réservations'),
+        'description'      => t('Voir les réservations enregistrées.'),
+        'page callback'    => 'drupal_get_form',
+        'page arguments'   => array('groom_admin_reservations_form'),
+        'access arguments' => array('access groom admin'),
+        'file'             => 'groom.admin.inc',
+        'weight'           => 0,
+    );
+
+    $items['admin/groom/reservation/add'] = array(
+        'title'            => t('Ajouter une réservation'),
+        'description'      => t('Créer une réservation Groom'),
+        'page callback'    => 'drupal_get_form',
+        'page arguments'   => array('groom_admin_reservation_form_content', 'add'),
+        'access arguments' => array('access groom admin'),
+        'file'             => 'groom.admin.inc',
+        'tab_parent'       => 'admin/groom/reservations',
+        'tab_root'         => 'admin/groom/reservations',
+        'type'             => MENU_LOCAL_ACTION,
+        'weight'           => 1,
+    );
+
+    $items['admin/groom/reservation/%groom_reservation/edit'] = array(
+        'title'            => t('Modifier'),
+        'description'      => t('Modifier la réservation'),
+        'page callback'    => 'drupal_get_form',
+        'page arguments'   => array('groom_admin_reservation_form_content', 'edit', 3),
+        'access arguments' => array('access groom admin'),
+        'file'             => 'groom.admin.inc',
+        'type'             => MENU_CALLBACK,
+        'weight'           => 2,
+    );
+
+    $items['admin/groom/autocomplete/user'] = array(
+        'title'            => t('User autocomplete'),
+        'page callback'    => t('_groom_admin_autotomplete_user'),
+        'access arguments' => array('access groom admin'),
+        'file'             => 'groom.admin.inc',
+        'type'             => MENU_CALLBACK,
+    );
+
+    $items['admin/groom/nomade-solo'] = array(
+        'title'            => t('Paramètres Nomade SOLO'),
+        'description'      => t('Paramétrer les réservations Nomade SOLO.'),
+        'page callback'    => 'drupal_get_form',
+        'page arguments'   => array('groom_admin_solo_form'),
+        'access arguments' => array('access groom admin'),
+        'file'             => 'groom.admin.inc',
+        'weight'           => 1,
+    );
+
+    $items['groom/reservation-choose/%/%/%'] = array(
+        'title'            => 'Choix de la réservation',
+        'description'      => 'Choisir la réservation.',
+        'page callback'    => 'groom_choose_reservation_content',
+        'page arguments'   => array(2, 3, 4),
+        'access arguments' => array('access reservation'),
+        'type'             => MENU_CALLBACK,
+    );
+
+    return $items;
+}
+
+function groom_preprocess_page(&$variables)
+{
+    drupal_add_js(array(
+        'groom' => array(
+            'user_points'            => userpoints_get_current_points(),
+            'reservation_solo_price' => intval(variable_get('groom_solo_reservation_price'))
+        ),
+    ), array(
+        'type'  => 'setting',
+        'cache' => false
+    ));
+}
+
+/**
+ *
+ */
+function groom_choose_reservation_content($timeSlotTypeId, $date, $timeSlotTypeRange)
+{
+    $slotTimeType    = GroomSlotType::get($timeSlotTypeId);
+    $preSelectedRoom = false;
+
+    // If it's a Nomade SOLO reservation, switch to anothher content provider
+    if (drupal_strtolower($slotTimeType->getEntity()->title->value()) == 'solo')
+    {
+        groom_choose_reservation_solo_content($slotTimeType, $date, $timeSlotTypeRange);
+        return;
+    }
+
+    // If it's a VIP reservation, pre-selects the room
+    if (drupal_strtolower($slotTimeType->getEntity()->title->value()) == 'vip') {
+        $preSelectedRoom = true;
+    }
+
+    $rooms         = GroomRoom::findByTimeSlotTypeId($timeSlotTypeId);
+    $reservations  = GroomReservation::findByDateAndTimeSlotAndStatus(
+        $date,
+        $timeSlotTypeRange,
+        array(
+            GroomReservation::STATUS_PENDING,
+            GroomReservation::STATUS_VALIDATED
+        )
+    );
+    $displayDate   = explode('-', $date);
+    $form          = drupal_get_form(
+        'groom_reservation_form',
+        $rooms,
+        $timeSlotTypeId,
+        $timeSlotTypeRange,
+        $date,
+        $preSelectedRoom
+    );
+
+    print theme('choose_reservation', array(
+        'reservation_form' => $form,
+        'time_slot_type'   => $slotTimeType->getNode(),
+        'time_slot'        => $timeSlotTypeRange,
+        'date'             => $displayDate[2] . '/' . $displayDate[1]. '/' . $displayDate[0],
+        'rooms'            => $rooms,
+        'reservations'     => $reservations,
+        'pre_selected'     => $preSelectedRoom,
+    ));
+}
+
+/**
+ *
+ */
+function groom_reservation_form($form, &$form_state)
+{
+    $rooms            = $form_state ['build_info']['args'][0];
+    $slot_type_id     = $form_state ['build_info']['args'][1];
+    $slot_range       = $form_state ['build_info']['args'][2];
+    $date             = $form_state ['build_info']['args'][3];
+    $has_preselection = $form_state ['build_info']['args'][4];
+
+    $form['#attributes']['class'][] = 'groom-form';
+
+    $form['errors'] = array();
+
+    $form['groom_reservation'] = array(
+        '#type'        => 'select',
+        '#title'       => t('Choix de la salle'),
+        '#required'    => true,
+        "#empty_option"=> t('- Choisissez une salle -'),
+        '#options'     => array(),
+        '#description' => t('Choisissez une salle.'),
+    );
+
+    foreach ($rooms as $room) {
+        $form['groom_reservation']['#options'][$room->vid] = $room->title;
+    }
+
+    $form['slot_type_id'] = array(
+        '#type'  => 'hidden',
+        '#value' => $slot_type_id
+    );
+
+    $form['slot_range'] = array(
+        '#type'  => 'hidden',
+        '#value' => $slot_range
+    );
+
+    $form['date'] = array(
+        '#type'  => 'hidden',
+        '#value' => $date
+    );
+
+    // "Book" and "Cancel" buttons
+    $form['actions'] = array(
+        '#type'       => 'container',
+        '#attributes' => array(
+            'class' => array('form-actions', 'clearfix'),
+        ),
+        'submit'      => array(
+            '#type'  => 'submit',
+            '#value' => t('Réserver'),
+        ),
+        'cancel'      => array(
+            '#type'       => 'link',
+            '#title'      => t('Annuler'),
+            '#href'       => '#',
+            '#options'    => array(
+                'external' => true,
+            ),
+            '#attributes' => array(
+                'class' => array('btn', 'btn-danger', 'btn-close'),
+            ),
+        ),
+    );
+
+    // If users don't have a choice on room selection (the first one is automatically selected)
+    if ($has_preselection)
+    {
+        unset($form['groom_reservation']['#empty_option']);
+        reset($form['groom_reservation']['#options']);
+        $form['groom_reservation']['#default_value'] = key($form['groom_reservation']['#options']);
+        $form['submit']['#attributes']['class']      = array('show', 'inline-block');
+    }
+
+    $form['#validate'] = array('groom_reservation_form_validate');
+    $form['#submit']   = array('groom_reservation_form_submit');
+
+    return $form;
+}
+
+/**
+ *
+ */
+function groom_reservation_form_validate(&$form, &$form_state)
+{
+    if ($errors = form_get_errors())
+    {
+        drupal_get_messages('error', true);
+        $form['#attributes']['class'][] = 'has-errors';
+
+        $markup = '<div class="error">';
+        foreach ($errors as $error) {
+            $markup .= '<div class="error-msg">'.$error.'</div>';
+        }
+        $markup .= '</div>';
+
+        $form['errors']['#markup'] = $markup;
+    }
+}
+
+/**
+ *
+ */
+function groom_reservation_form_submit($form, &$form_state)
+{
+    global $user;
+    $quantity = 1;
+
+    $room_id           = $form_state['values']['groom_reservation'];
+    $room_slot_type_id = $form_state['values']['slot_type_id'];
+    $room_slot_range   = $form_state['values']['slot_range'];
+    $room_date         = $form_state['values']['date'];
+
+    $room      = GroomRoom::get($room_id);
+    $slot_type = GroomSlotType::get($room_slot_type_id);
+
+    $data = array(
+        'room_id'      => $room_id,
+        'room_name'    => $room->getEntity()->title->value(),
+        'slot_type_id' => $room_slot_type_id,
+        'slot_type'    => $slot_type->getEntity()->title->value(),
+        'slot_range'   => $room_slot_range,
+        'date'         => $room_date,
+        'capacity'     => $room->getEntity()->field_room_capacite_accueil->value()
+    );
+
+    $product         = commerce_product_load_by_sku($room->getEntity()->field_room_product_sku->value());
+    $line_item       = commerce_product_line_item_new($product, $quantity, 0, $data);
+    $line_item_added = commerce_cart_product_add($user->uid, $line_item, false);
+
+    if ($line_item_added === false) {
+
+    }
+    else
+    {
+        $reservation   = GroomReservation::findBy(
+            $room_date,
+            $room_slot_range,
+            $room_slot_type_id,
+            array(),
+            $room_id
+        );
+        $line_item->data['groom_reservation_id'] = count($reservation) > 0 ? reset($reservation)->getNid() : 0;
+        commerce_line_item_save($line_item);
+        $line_item     = entity_metadata_wrapper('commerce_line_item', $line_item);
+        $products_form = drupal_get_form('groom_products_list_form', $line_item);
+
+        print theme('choose_reservation_ok', array(
+            'reservation'   => count($reservation) > 0 ? reset($reservation) : null,
+            'products_form' => $products_form,
+        ));
+        exit();
+    }
+}
+
+/**
+ * @param $time_slot_type
+ * @param $date
+ * @param $time_slot_type_range
+ */
+function groom_choose_reservation_solo_content($time_slot_type, $date, $time_slot_type_range)
+{
+    global $user;
+
+    $already_reserved_nb = 0;
+    $reservations        = GroomReservation::findBy(
+        $date,
+        $time_slot_type_range,
+        $time_slot_type->getNid(),
+        array(GroomReservation::STATUS_VALIDATED),
+        null,
+        0,
+        'uid'
+    );
+    $co_workers          = GroomReservation::findCoWorkers($reservations);
+    $quantity_max        = intval(variable_get('groom_solo_reservation_capacity', 23));
+    $quantity_available  = _groom_reservation_solo_get_availabile_places($date, $time_slot_type_range);
+    $form                = drupal_get_form('groom_reservation_solo_form', $time_slot_type, $time_slot_type_range, $date);
+    $displayDate         = explode('-', $date);
+
+    if (array_key_exists($user->uid, $reservations)) {
+        $already_reserved_nb = $reservations[$user->uid]->getQuantity();
+    }
+
+    // Sort the c-oworkers list
+    usort($co_workers, function ($a, $b) use ($user)
+    {
+        $uid_a        = $a->getIdentifier();
+        $uid_b        = $b->getIdentifier();
+        $first_name_a = $a->field_user_prenom->value();
+        $first_name_b = $b->field_user_prenom->value();
+
+        // Compare alphabetically with first names
+        $return = strcmp($first_name_a, $first_name_b);
+
+        // Place the current user on first position in the list
+        if ($uid_a == $user->uid) {
+            $return = -1;
+        } else if ($uid_b == $user->uid) {
+            $return = 1;
+        }
+
+        return $return;
+    });
+
+    print theme('choose_reservation_solo', array(
+        'reservations'        => $reservations,
+        'reservation_form'    => $form,
+        'time_slot'           => $time_slot_type_range,
+        'date'                => $displayDate[2] . '/' . $displayDate[1] . '/' . $displayDate[0],
+        'co_workers'          => $co_workers,
+        'already_reserved_nb' => $already_reserved_nb,
+        'quantity_reserved'   => $quantity_max - $quantity_available,
+        'quantity_available'  => $quantity_available,
+        'quantity_max'        => $quantity_max,
+        'user_points'         => userpoints_get_current_points(),
+    ));
+}
+
+function groom_reservation_solo_form($form, &$form_state)
+{
+    $slot_type  = $form_state ['build_info']['args'][0];
+    $slot_range = $form_state ['build_info']['args'][1];
+    $date       = $form_state ['build_info']['args'][2];
+
+    $form['#attributes']['class'][] = 'groom-form';
+
+    $form['slot_type_id'] = array(
+        '#type'  => 'hidden',
+        '#value' => $slot_type->getNid()
+    );
+
+    $form['slot_range'] = array(
+        '#type'  => 'hidden',
+        '#value' => $slot_range
+    );
+
+    $form['date'] = array(
+        '#type'  => 'hidden',
+        '#value' => $date
+    );
+
+    $form['quantity'] = array(
+        '#type'  => 'hidden',
+        '#value' => 1
+    );
+
+    $form['submit'] = array(
+        '#type'  => 'submit',
+        '#value' => t('Réserver'),
+    );
+
+    $form['#validate'] = array('groom_reservation_solo_form_validate');
+    $form['#submit']   = array('groom_reservation_solo_form_submit');
+
+    return $form;
+}
+
+/**
+ *
+ */
+function groom_reservation_solo_form_validate($form, &$form_state)
+{
+    $price        = 1;
+    $user_points  = userpoints_get_current_points();
+    $slot_range   = $form_state['input']['slot_range'];
+    $date         = new DateTime($form_state['input']['date']);
+    $quantity     = intval($form_state['input']['quantity']);
+    $quantity_max = _groom_reservation_solo_get_availabile_places($date, $slot_range);
+
+    if ($quantity > $quantity_max)
+    {
+        form_set_error('groom_reservation_solo_form', t('La demande de places est supérieure à la capacité de réservation.'));
+        echo theme('status_messages', array('display' => 'error'));
+    }
+    else if ($user_points < ($quantity * $price))
+    {
+        $message = t('Votre montant d\'unités SOLO (%units unités) est insuffisant pour la réservation (%price unités).', array(
+            '%units' => $user_points,
+            '%price' => $price * $quantity,
+        ));
+        $message .= '<br /><br />';
+        $message .= t('Demande de réservation de !nb place(s) pour le !date sur le créneau !slot_range', array(
+            '!nb' => '<strong>'.$quantity.'</strong>',
+            '!date' => '<strong>'.$date->format('d/m/Y').'</strong>',
+            '!slot_range' => '<strong>'.$slot_range.'</strong>',
+        ));
+
+        echo theme('choose_reservation_nok', array(
+            'container_class' => 'resa-solo',
+            'message'         => $message,
+            'buttons'         => array(
+                array(
+                    'href'  => url('unites-nomade-solo'),
+                    'title' => t('Acheter vos unités SOLO'),
+                    'class' => 'btn-primary',
+                ),
+                array(
+                    'href'  => '#',
+                    'title' => t('Cancel'),
+                    'class' => 'btn-cancel',
+                ),
+            )
+        ));
+
+        exit();
+    }
+}
+
+/**
+ * Returns the available SOLO places.
+ *
+ * @param string|DateTime $date      Date to filter
+ * @param string          $time_slot Which time slot
+ *
+ * @return int Amount of available places
+ */
+function _groom_reservation_solo_get_availabile_places($date, $time_slot)
+{
+    $time_slot_type = GroomSlotType::get(variable_get('groom_solo_reservation_slot_type', 103));
+    $spaces         = intval(variable_get('groom_solo_reservation_capacity', 23));
+
+    if (!$time_slot_type || !$time_slot_type->hasSlotRange($time_slot)) {
+        return $spaces;
+    }
+
+    if ($date instanceof DateTime) {
+        $date = $date->format('Y-m-d');
+    }
+
+    $solo_reservations = GroomReservation::getQuantityBy(
+        $date,
+        $time_slot,
+        $time_slot_type->getNid(),
+        GroomReservation::STATUS_VALIDATED
+    );
+
+    return intval($spaces - $solo_reservations);
+}
+
+/**
+ *
+ */
+function groom_reservation_solo_form_submit($form, &$form_state)
+{
+    global $user;
+
+    $price        = 1;
+    $nid          = false;
+    $slot_type    = GroomSlotType::get($form_state['input']['slot_type_id']);
+    $slot_range   = $form_state['input']['slot_range'];
+    $quantity     = intval($form_state['input']['quantity']);
+    $date         = DateTime::createFromFormat('Y-m-d', $form_state['input']['date']);
+
+    $reservation  = new GroomReservation(
+        null,
+        entity_metadata_wrapper('user', $user),
+        $date,
+        null,
+        $slot_range,
+        $slot_type,
+        $quantity,
+        GroomReservation::STATUS_VALIDATED
+    );
+
+    $points_transaction = userpoints_userpointsapi(array(
+        'uid'         => $user->uid,
+        'operation'   => 'Réservation Nomade SOLO',
+        'display'     => false,
+        'points'      => -$quantity * $price,
+        'description' => t('Réservation Nomade SOLO pour le !date concernant le créneau !range', array(
+            '!date'  => '<strong>'.$date->format('').'</strong>',
+            '!range' => '<strong>'.$slot_range.'</strong>'
+        )),
+    ));
+
+    if ($points_transaction['status'] === true) {
+        $nid = $reservation->save();
+    }
+
+    if ($nid) {
+        echo theme('choose_reservation_solo_ok');
+    }
+    else
+    {
+        echo theme('choose_reservation_nok', array(
+            'container_class' => 'resa-solo',
+            'message'         => t('Nous sommes désolé mais une erreur technique est survenue, la réservation n\'a pas abouti.')
+                .'<br />'.t('Veuillez contacter votre administrateur pour plus d\'informations.'),
+        ));
+    }
+
+    exit();
+}
+
+/**
+ *
+ */
+function groom_permission()
+{
+    return array(
+        'access groom admin' => array(
+            'title'            => t('Gérer les paramètres Groom'),
+            'description'      => t('!configure les différentes variables pour le site Groom.', array(
+                '!configure' => l(t('Configurer'), 'admin/groom/nomade-solo'),
+            )),
+        ),
+        'access reservationtype' => array(
+            'title'            => t('Gérer les types de réservation'),
+            'description'      => t('La modification des types de réservation nécéssite la permission !permission-name.', array(
+                '!permission-name' => l(t('Gérer les types de réservation'), 'admin/people/permissions', array('fragment' => 'module-block')),
+            )),
+        ),
+        'access reservation' => array(
+            'title'       => t('Effectuer une réservation'),
+            'description' => t('La modification des types de réservation nécéssite la permission !permission-name.', array(
+                '!permission-name' => l(t('Effectuer une réservation'), 'admin/people/permissions', array('fragment' => 'module-block')),
+            )),
+        ),
+    );
+}
+
+/**
+ *
+ */
+function groom_theme($existing, $type, $theme, $path)
+{
+    global $user;
+
+    return array(
+        'groom_calendar'        => array(
+            'template'  => 'groom_calendar',
+            'path'      => drupal_get_path('module', 'groom') . '/theme',
+            'variables' => array(
+                'reservationtype' => null,
+                'display_date'    => new DateTime()
+            ),
+        ),
+        'choose_reservation'    => array(
+            'template'  => 'choose_reservation',
+            'path'      => drupal_get_path('module', 'groom') . '/theme',
+            'variables' => array(
+                'date'             => new DateTime(),
+                'reservation_form' => null,
+                'time_slot'        => '',
+                'time_slot_type'   => '',
+                'rooms'            => array(),
+                'reservations'     => array(),
+                'pre_selected'     => false,
+            ),
+        ),
+        'choose_reservation_solo'    => array(
+            'template'  => 'choose_reservation_solo',
+            'path'      => drupal_get_path('module', 'groom') . '/theme',
+            'variables' => array(
+                'date'               => new DateTime(),
+                'reservation_form'   => null,
+                'time_slot'          => '',
+                'reservations'       => array(),
+                'co_workers'         => array(),
+                'current_uid'        => $user->uid,
+                'user_points'        => 0,
+                'quantity_max'       => 1,
+                'quantity_available' => 1,
+                'quantity_reserved'  => 0,
+            ),
+        ),
+        'choose_reservation_ok' => array(
+            'template'  => 'choose_reservation_ok',
+            'path'      => drupal_get_path('module', 'groom') . '/theme',
+            'variables' => array(
+                'products_form' => null,
+                'reservation'   => null,
+            )
+        ),
+        'choose_reservation_solo_ok' => array(
+            'template' => 'choose_reservation_solo_ok',
+            'path'     => drupal_get_path('module', 'groom') . '/theme',
+            'variables' => array(
+                'reservation' => null,
+            )
+        ),
+        'choose_reservation_nok' => array(
+            'template'  => 'choose_reservation_nok',
+            'path'      => drupal_get_path('module', 'groom') . '/theme',
+            'variables' => array(
+                'container_class' => '',
+                'title'           => t('Réservation invalide'),
+                'message'         => t('Votre réservation n\'a pas pu être menée à sont terme'),
+                'buttons'         => array(
+                    array(
+                        'href'  => '#',
+                        'title' => t('Cancel'),
+                        'class' => 'btn-cancel btn-default'
+                    )
+                )
+            )
+        ),
+        'groom_admin_reservations' => array(
+            'template'  => 'reservations',
+            'path'      => drupal_get_path('module', 'groom') . '/theme/admin',
+            'variables' => array(
+                'reservations' => array(),
+                'pager_total'  => 0,
+                'pager_limit'  => 0,
+            )
+        ),
+        'groom_admin_reservations_table' => array(
+            'function' => 'theme_groom_admin_reservations_table',
+            'variables' => array(
+                'reservations' => array(),
+                'pager_total'  => 0,
+                'pager_limit'  => 0,
+            )
+        ),
+        'groom_input_number' => array(
+            'arguments'      => array('element' => NULL),
+            'render element' => 'element',
+            'file'           => 'groom.theme.inc',
+        ),
+        'groom_status_messages' => array(
+            'function'  => 'theme_groom_status_messages',
+            'variables' => array(
+                'messages' => array(),
+            )
+        ),
+        'groom_message_add_product_with_empty_cart' => array(
+            'template'  => 'message_add_product_with_empty_cart',
+            'path'      => drupal_get_path('module', 'groom') . '/theme',
+            'variables' => array(
+                'reservations_form' => null,
+                'has_reservations'  => false,
+            )
+        ),
+    );
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function groom_views_api()
+{
+    return array(
+        'api'           => 3,
+        'path'          => drupal_get_path('module', 'groom') . '/includes/views',
+        'template path' => drupal_get_path('module', 'groom') . '/theme',
+    );
+}
+
+function groom_commerce_order_view($order, $view_mode)
+{
+    if (!in_array($view_mode, array('pdf', 'canceled'))) {
+        return;
+    }
+
+    $transactions   = commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id));
+    $transaction    = !empty($transactions) ? end($transactions) : null;
+    $invoice_text   = &$order->content['invoice_text']['#markup'];
+    $order          = entity_metadata_wrapper('commerce_order', $order);
+    $date           = new DateTime('@' . ($order->field_commerce_billy_i_date->value() ?: $order->created->value()));
+    $payment_method = commerce_payment_method_get_title('short_title', $transaction->payment_method);
+    $currency       = commerce_currency_load(commerce_default_currency());
+
+    if ($transaction !== null)
+    {
+        $payment_method = commerce_payment_method_get_title('short_title', $transaction->payment_method);
+        $currency       = commerce_currency_load($transaction->currency_code);
+    }
+
+    $replacements = array(
+        '[date]'           => '<em>'.$date->format('d/m/Y').'</em>',
+        '[payment-method]' => '<em>'.strtolower($payment_method).'</em>',
+        '[currency]'       => $currency['name'].'s',
+    );
+
+    $invoice_text = str_replace(array_keys($replacements), array_values($replacements), $invoice_text);
+
+    if ($view_mode === 'canceled') {
+        _groom_commerce_order_view_canceled($order);
+    }
+
+    $order = $order->value();
+    $order->order_date = $date;
+}
+
+function _groom_commerce_order_view_canceled(&$order)
+{
+    $line_items_ids = array();
+    $order->commerce_line_items->set(array_filter($order->commerce_line_items->value(), function ($line_item) use (&$line_items_ids)
+    {
+        $keep = false;
+
+        if ($line_item->type === 'grefund_line_item')
+        {
+            $line_items_ids[] = $line_item->line_item_id;
+            $keep             = true;
+        }
+
+        return $keep;
+    }));
+
+    // Refund lines
+    $view         = views_get_view('commerce_line_item_table');
+    $view->set_display();
+    $view->pre_execute(array(implode(',', $line_items_ids)));
+    $lines_markup = $view->render();
+
+
+    // Total
+    commerce_order_calculate_total($order->value());
+    $total_field = field_view_field('commerce_order', $order->value(), 'commerce_order_total', array(
+        'label' => 'hidden',
+        'type' => 'commerce_price_formatted_components',
+        'settings' => array(
+            'calculation' => FALSE,
+        ),
+    ));
+    $total_markup = drupal_render($total_field);
+
+    $order->value()->content['commerce_line_items'][0]['#markup']  = $lines_markup;
+    $order->value()->content['commerce_order_total'][0]['#markup'] = $total_markup;
+}
+
+function groom_commerce_product_calculate_sell_price_line_item_alter(&$line_item)
+{
+    $product = entity_metadata_wrapper('commerce_line_item', $line_item)->commerce_product;
+    if ($line_item->is_new && $product->getBundle() === 'product') {
+        $line_item->data['context']['add_to_cart_combine'] = false;
+    }
+}
+
+/**
+ * On the user deletion, change the reservation attribution to the anonymous Drupal user.
+ *
+ * Implements hook_user_delete().
+ * @see hook_user_delete()
+ * @link https://api.drupal.org/api/drupal/modules!user!user.api.php/function/hook_user_delete/7
+ */
+function groom_user_delete($account)
+{
+    $reservations = GroomReservation::findBy(NULL, NULL, 0, array(), NULL, $account->uid, 'nid');
+
+    if (empty($reservations)) {
+        return;
+    }
+
+    foreach ($reservations as $reservation) {
+        $reservation->delete();
+    }
+}
+
+function groom_reservation_load($id)
+{
+    return GroomReservation::get($id);
+}

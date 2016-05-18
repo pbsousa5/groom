@@ -1,0 +1,7 @@
+name = Panneaux du profil utilisateur
+description = Panneaux permettant à l'utilisateur de mettre à jour les champs de son profile
+core = 7.x
+package = Groom
+
+version = "7.x-1.0"
+core = "7.x"
